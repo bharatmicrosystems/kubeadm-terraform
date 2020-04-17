@@ -9,5 +9,5 @@ for instance in $(echo $loadbalancers | tr ',' ' '); do
   gcloud compute ssh --zone=$ZONE --internal-ip $instance -- "cd ~/ && sh -x configure-nginx.sh $masters $etcds"
 done
 echo 'Setting up HA between NGINX Load Balancers'
-sh -x setup-gcp-failoverd.sh -i $internal_vip -e $external_vip -l $loadbalancers -c "k8scluster" -h ":80\/nginx_status"
+sh -x setup-gcp-failoverd.sh -i $internal_vip -e $external_vip -l $loadbalancers -c "k8scluster" -h ":8080\/nginx_status"
 sleep 1
