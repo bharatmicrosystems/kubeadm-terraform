@@ -1,11 +1,13 @@
 masters=$1
 etcds=$2
+nodes=$3
 sudo rpm -ivh http://nginx.org/packages/centos/7/noarch/RPMS/nginx-release-centos-7-0.el7.ngx.noarch.rpm
 sudo yum install -y nginx telnet
 sudo setenforce 0
 sudo sed -i 's/enforcing/permissive/g' /etc/selinux/config
 #sudo systemctl enable nginx
 sudo mkdir -p /etc/nginx/tcpconf.d
+sudo rm -rf /etc/nginx/conf.d/default.conf
 sudo chmod 666 /etc/nginx/nginx.conf
 sudo sed -i "s/1024/999999/g" /etc/nginx/nginx.conf
 sudo cat << EOF | sudo tee /etc/nginx/conf.d/healthz.conf
@@ -20,9 +22,7 @@ server {
 EOF
 sudo cat << EOF | sudo tee /etc/nginx/tcpconf.d/nodes.conf
 upstream nodes_http {
-    server node01:30036;
-    server node02:30036;
-    #ph
+    #ph_http
 }
 
 server {
@@ -31,9 +31,7 @@ server {
 }
 
 upstream nodes_https {
-    server node01:30037;
-    server node02:30037;
-    #ph
+    #ph_https
 }
 
 server {
@@ -73,6 +71,11 @@ done
 
 for instance in $(echo $etcds | tr ',' ' '); do
   sudo sed -i "s/#ph/server ${instance}:2379;\n    #ph/g" /etc/nginx/tcpconf.d/etcd.conf
+done
+
+for instance in $(echo $nodes | tr ',' ' '); do
+  sudo sed -i "s/#ph_http/server ${instance}:30036;\n    #ph_http/g" /etc/nginx/tcpconf.d/nodes.conf
+  sudo sed -i "s/#ph_https/server ${instance}:30037;\n    #ph_https/g" /etc/nginx/tcpconf.d/nodes.conf
 done
 
 #sudo systemctl start nginx
