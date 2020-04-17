@@ -10,12 +10,35 @@ sudo chmod 666 /etc/nginx/nginx.conf
 sudo sed -i "s/1024/999999/g" /etc/nginx/nginx.conf
 sudo cat << EOF | sudo tee /etc/nginx/conf.d/healthz.conf
 server {
-    listen 127.0.0.1:80;
+    listen 127.0.0.1:8080;
     server_name 127.0.0.1;
 
     location /nginx_status {
         stub_status;
     }
+}
+EOF
+sudo cat << EOF | sudo tee /etc/nginx/tcpconf.d/nodes.conf
+upstream nodes_http {
+    server node01:30036;
+    server node02:30036;
+    #ph
+}
+
+server {
+    listen 80;
+    proxy_pass nodes_http;
+}
+
+upstream nodes_https {
+    server node01:30037;
+    server node02:30037;
+    #ph
+}
+
+server {
+    listen 443;
+    proxy_pass nodes_https;
 }
 EOF
 sudo echo 'stream {' >> /etc/nginx/nginx.conf
