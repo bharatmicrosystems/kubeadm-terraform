@@ -38,40 +38,6 @@ module "master03" {
   scopes = ["storage-rw"]
 }
 
-module "etcd01" {
-  source        = "./modules/instance"
-  instance_name = "etcd01"
-  instance_machine_type = "n1-standard-1"
-  instance_zone = "${var.region}-a"
-  instance_image = "centos-7-v20191014"
-  subnet_name = "default"
-  tags = ["etcd"]
-  startup_script = ""
-  scopes = ["storage-rw"]
-}
-module "etcd02" {
-  source        = "./modules/instance"
-  instance_name = "etcd02"
-  instance_machine_type = "n1-standard-1"
-  instance_zone = "${var.region}-b"
-  instance_image = "centos-7-v20191014"
-  subnet_name = "default"
-  tags = ["etcd"]
-  startup_script = ""
-  scopes = ["storage-rw"]
-}
-module "etcd03" {
-  source        = "./modules/instance"
-  instance_name = "etcd03"
-  instance_machine_type = "n1-standard-1"
-  instance_zone = "${var.region}-c"
-  instance_image = "centos-7-v20191014"
-  subnet_name = "default"
-  tags = ["etcd"]
-  startup_script = ""
-  scopes = ["storage-rw"]
-}
-
 module "node01" {
   source        = "./modules/instance"
   instance_name = "node01"
@@ -190,17 +156,17 @@ module "etcdlb-etcd" {
   source_tags = ["k8sloadbalancer"]
   tcp_ports = ["2379"]
   udp_ports = []
-  target_tags = ["etcd"]
+  target_tags = ["k8smaster"]
 }
 
 module "etcd-etcd" {
   name        = "etcd-etcd"
   source        = "./modules/firewall"
   source_ranges = []
-  source_tags = ["etcd"]
+  source_tags = ["k8smaster"]
   tcp_ports = ["2379-2380"]
   udp_ports = []
-  target_tags = ["etcd"]
+  target_tags = ["k8smaster"]
 }
 
 module "allow-ssh-from-bastion" {
